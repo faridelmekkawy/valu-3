@@ -1,0 +1,318 @@
+:root {
+  --orange: #ef5f17;
+  --teal: #57beb1;
+  --bg: #1e1e1e;
+  --panel: #292929;
+  --text: #f7f7f7;
+  --muted: #bcbcbc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #303030 0%, var(--bg) 56%);
+  color: var(--text);
+  font-family: Inter, Avenir, Segoe UI, Roboto, sans-serif;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.app {
+  width: min(980px, 96vw);
+  min-height: min(760px, 95vh);
+  position: relative;
+}
+
+.screen {
+  display: none;
+  height: 100%;
+  border-radius: 24px;
+  padding: clamp(16px, 2.8vw, 28px);
+  background: linear-gradient(160deg, #262626, #1b1b1b);
+  border: 1px solid rgba(87, 190, 177, 0.26);
+  box-shadow: 0 0 42px rgba(87, 190, 177, 0.14);
+}
+
+.screen--active {
+  display: flex;
+}
+
+#startScreen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+}
+
+h1 {
+  margin: 4px 0;
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--teal);
+  font-size: clamp(1.2rem, 4.6vw, 1.8rem);
+  font-weight: 700;
+}
+
+.instruction,
+.controls-note {
+  color: var(--muted);
+}
+
+.valu-logo {
+  width: clamp(100px, 18vw, 130px);
+  height: auto;
+  object-fit: contain;
+}
+
+.valu-logo--small {
+  width: clamp(70px, 11vw, 90px);
+}
+
+.hud {
+  display: grid;
+  grid-template-columns: auto repeat(4, minmax(70px, auto));
+  gap: 14px;
+  align-items: center;
+}
+
+.hud-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.hud-item span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.hud-item strong {
+  color: var(--teal);
+}
+
+#gameScreen {
+  flex-direction: column;
+  gap: 20px;
+}
+
+.track-wrap {
+  flex: 1;
+  display: grid;
+  place-items: center;
+}
+
+.track {
+  width: min(900px, 90vw);
+  height: clamp(130px, 26vw, 180px);
+  border-radius: 22px;
+  position: relative;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.07) 0 16px,
+      rgba(255, 255, 255, 0.01) 16px 34px
+    ),
+    linear-gradient(180deg, #353535, #212121);
+  border: 2px solid rgba(87, 190, 177, 0.35);
+  overflow: hidden;
+  animation: trackMove 900ms linear infinite;
+}
+
+@keyframes trackMove {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: -36px;
+  }
+}
+
+.zone {
+  position: absolute;
+  top: 20%;
+  height: 60%;
+  border-radius: 14px;
+}
+
+.zone--good {
+  background: rgba(87, 190, 177, 0.26);
+  box-shadow: 0 0 18px rgba(87, 190, 177, 0.4);
+}
+
+.zone--perfect {
+  background: rgba(239, 95, 23, 0.35);
+  box-shadow: 0 0 18px rgba(239, 95, 23, 0.72);
+}
+
+.sparkie {
+  position: absolute;
+  left: 0;
+  bottom: 12%;
+  width: clamp(66px, 12vw, 92px);
+  height: clamp(66px, 12vw, 92px);
+  transform-origin: center bottom;
+  transition: transform 120ms ease;
+}
+
+.sparkie img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(239, 95, 23, 0.5));
+}
+
+.sparkie.running {
+  animation: sparkieRun 280ms ease-in-out infinite alternate;
+}
+
+@keyframes sparkieRun {
+  from {
+    transform: translateY(0) rotate(-4deg);
+  }
+  to {
+    transform: translateY(-6px) rotate(4deg);
+  }
+}
+
+.sparkie.stopped {
+  transform: translateY(1px) scale(1.04);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: white;
+  transition: transform 120ms ease, filter 160ms ease;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.btn--primary,
+.btn--stop {
+  background: linear-gradient(45deg, var(--orange), #ff8241);
+  box-shadow: 0 0 18px rgba(239, 95, 23, 0.5);
+}
+
+.btn--ghost {
+  background: rgba(87, 190, 177, 0.2);
+  border: 1px solid rgba(87, 190, 177, 0.45);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(10, 10, 10, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 3;
+}
+
+.overlay.active {
+  display: grid;
+}
+
+.result-card {
+  width: min(360px, 90vw);
+  background: var(--panel);
+  border-radius: 20px;
+  border: 1px solid rgba(239, 95, 23, 0.5);
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 0 30px rgba(239, 95, 23, 0.35);
+}
+
+#resultLabel {
+  margin: 0;
+  font-size: 2rem;
+}
+
+#resultPoints {
+  margin: 6px 0 10px;
+  font-size: 1.5rem;
+  color: var(--teal);
+}
+
+.reward-wrap {
+  min-height: 72px;
+  display: grid;
+  place-items: center;
+}
+
+#rewardIcon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.reward-fallback {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #d8d8d8, #777);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.overlay-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.perfect-shake {
+  animation: perfectShake 220ms linear;
+}
+
+@keyframes perfectShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-8px);
+  }
+  75% {
+    transform: translateX(8px);
+  }
+}
+
+.img-placeholder {
+  background: linear-gradient(130deg, #ff955f, #57beb1);
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 700px) {
+  .hud {
+    grid-template-columns: repeat(2, minmax(110px, 1fr));
+  }
+}
