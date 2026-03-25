@@ -9,33 +9,24 @@
   <body>
     <main class="app">
       <section id="startScreen" class="screen screen--active" aria-label="Start screen">
-        <img
-          id="startLogo"
-          class="valu-logo"
-          src="./Value-Logo.png"
-          alt="Valu logo"
-          data-fallback="logo"
-        />
+        <img id="startLogo" class="valu-logo" src="./Value-Logo.png" alt="Valu logo" data-fallback="logo" />
         <h1>Sparkie Dash</h1>
         <p class="subtitle">Perfect Stop</p>
         <p class="instruction">Stop Sparkie in the perfect zone</p>
+        <label class="name-label" for="playerName">Player name</label>
+        <input id="playerName" class="name-input" type="text" maxlength="20" placeholder="Enter your name" />
+        <p id="nameError" class="name-error hidden">Please enter your name to start.</p>
         <button id="startBtn" class="btn btn--primary">Start Game</button>
         <div class="controls-note">Controls: STOP button / Space / Enter / Click / Tap • P = Pause</div>
       </section>
 
       <section id="gameScreen" class="screen" aria-label="Game screen">
         <header class="hud">
-          <img
-            id="gameLogo"
-            class="valu-logo valu-logo--small"
-            src="./Value-Logo.png"
-            alt="Valu logo"
-            data-fallback="logo"
-          />
+          <img id="gameLogo" class="valu-logo valu-logo--small" src="./Value-Logo.png" alt="Valu logo" data-fallback="logo" />
+          <div class="hud-item"><span>Player</span><strong id="playerValue">-</strong></div>
           <div class="hud-item"><span>Score</span><strong id="scoreValue">0</strong></div>
-          <div class="hud-item"><span>Round</span><strong id="roundValue">1</strong></div>
+          <div class="hud-item"><span>Round</span><strong id="roundValue">1/3</strong></div>
           <div class="hud-item"><span>Best</span><strong id="bestValue">0</strong></div>
-          <div class="hud-item"><span>Combo</span><strong id="comboValue">x1</strong></div>
         </header>
 
         <div class="track-wrap">
@@ -43,12 +34,7 @@
             <div id="goodZone" class="zone zone--good"></div>
             <div id="perfectZone" class="zone zone--perfect"></div>
             <div id="sparkie" class="sparkie" aria-label="Sparkie runner">
-              <img
-                id="sparkieImg"
-                src="./sparkie_player.png"
-                alt="Sparkie"
-                data-fallback="sparkie"
-              />
+              <img id="sparkieImg" src="./sparkie_player.png" alt="Sparkie" data-fallback="sparkie" />
             </div>
           </div>
         </div>
@@ -70,7 +56,7 @@
         </div>
         <p id="accuracyText">Center hit!</p>
         <div class="overlay-actions">
-          <button id="nextRoundBtn" class="btn btn--primary">Play Again</button>
+          <button id="nextRoundBtn" class="btn btn--primary">Next Round</button>
           <button id="restartBtn" class="btn btn--ghost">Restart</button>
         </div>
       </div>
