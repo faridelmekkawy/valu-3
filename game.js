@@ -1,10 +1,12 @@
 (() => {
   const CONFIG = {
-    totalRounds: 3,
-    baseSpeedPxPerSec: 220,
-    speedIncreasePerRound: 80,
-    goodZoneRatio: 0.26,
-    perfectZoneRatio: 0.07,
+    baseRounds: 3,
+    levelSpeeds: [260, 360, 470],
+    impossibleSpeed: 640,
+    goodZoneRatios: [0.22, 0.18, 0.14],
+    perfectZoneRatios: [0.06, 0.045, 0.03],
+    impossibleGoodZoneRatio: 0.1,
+    impossiblePerfectZoneRatio: 0.018,
     scoring: { perfect: 100, great: 70, good: 40, miss: 0 },
   };
 
@@ -29,6 +31,9 @@
     targetCenterRatio: 0.5,
     lastTick: 0,
     rafId: 0,
+    perfectCount: 0,
+    unlockedImpossible: false,
+    inImpossibleRound: false,
   };
 
   const el = {
@@ -68,7 +73,7 @@
     el.stopBtn.addEventListener('click', stopRun);
     el.pauseBtn.addEventListener('click', togglePause);
     el.nextRoundBtn.addEventListener('click', nextRoundAction);
-    el.restartBtn.addEventListener('click', restartGame);
+    el.restartBtn.addEventListener('click', goHome);
 
     document.addEventListener('keydown', (event) => {
       if (event.repeat) return;
@@ -92,17 +97,27 @@
       el.nameError.classList.remove('hidden');
       return;
     }
-    el.nameError.classList.add('hidden');
-    state.playerName = name;
-    state.score = 0;
-    state.round = 1;
-    state.gameOver = false;
 
+    Object.assign(state, {
+      playerName: name,
+      score: 0,
+      round: 1,
+      gameOver: false,
+      perfectCount: 0,
+      unlockedImpossible: false,
+      inImpossibleRound: false,
+    });
+
+    el.nameError.classList.add('hidden');
     el.startScreen.classList.remove('screen--active');
     el.gameScreen.classList.add('screen--active');
 
     updateHud();
     startRound();
+  }
+
+  function currentRoundLimit() {
+    return state.unlockedImpossible ? CONFIG.baseRounds + 1 : CONFIG.baseRounds;
   }
 
   function startRound() {
@@ -113,13 +128,14 @@
     state.lastTick = performance.now();
 
     const trackWidth = el.track.clientWidth;
-    const sparkieWidth = el.sparkie.clientWidth;
     state.sparkieX = 0;
-    state.targetCenterRatio = 0.2 + Math.random() * 0.65;
-    state.speed = CONFIG.baseSpeedPxPerSec + (state.round - 1) * CONFIG.speedIncreasePerRound;
+    state.targetCenterRatio = 0.18 + Math.random() * 0.68;
+
+    const levelIndex = Math.min(state.round, CONFIG.baseRounds) - 1;
+    state.speed = state.inImpossibleRound ? CONFIG.impossibleSpeed : CONFIG.levelSpeeds[levelIndex];
 
     placeSparkie();
-    setZones(trackWidth, sparkieWidth);
+    setZones(trackWidth);
 
     el.sparkie.classList.remove('stopped');
     el.sparkie.classList.add('running');
@@ -129,8 +145,12 @@
   }
 
   function setZones(trackWidth) {
-    const goodSize = Math.max(70, trackWidth * CONFIG.goodZoneRatio);
-    const perfectSize = Math.max(22, trackWidth * CONFIG.perfectZoneRatio);
+    const levelIndex = Math.min(state.round, CONFIG.baseRounds) - 1;
+    const goodRatio = state.inImpossibleRound ? CONFIG.impossibleGoodZoneRatio : CONFIG.goodZoneRatios[levelIndex];
+    const perfectRatio = state.inImpossibleRound ? CONFIG.impossiblePerfectZoneRatio : CONFIG.perfectZoneRatios[levelIndex];
+
+    const goodSize = Math.max(44, trackWidth * goodRatio);
+    const perfectSize = Math.max(10, trackWidth * perfectRatio);
     const centerX = trackWidth * state.targetCenterRatio;
 
     const goodLeft = clamp(centerX - goodSize / 2, 0, trackWidth - goodSize);
@@ -155,10 +175,7 @@
     state.sparkieX += state.speed * deltaSec;
 
     const maxX = el.track.clientWidth - el.sparkie.clientWidth;
-    if (state.sparkieX >= maxX) {
-      // Hitting the end is NOT a loss; Sparkie loops back and keeps running.
-      state.sparkieX = 0;
-    }
+    if (state.sparkieX >= maxX) state.sparkieX = 0;
 
     placeSparkie();
     state.rafId = requestAnimationFrame(tick);
@@ -189,10 +206,10 @@
     const perfectRadius = parseFloat(el.perfectZone.style.width) / 2;
     const goodRadius = parseFloat(el.goodZone.style.width) / 2;
 
-    if (distance <= perfectRadius) return { band: 'perfect', label: 'PERFECT', points: CONFIG.scoring.perfect, accuracy: 'Bullseye!'};
-    if (distance <= perfectRadius * 1.8) return { band: 'great', label: 'GREAT', points: CONFIG.scoring.great, accuracy: 'So close!'};
-    if (distance <= goodRadius) return { band: 'good', label: 'GOOD', points: CONFIG.scoring.good, accuracy: 'Inside the zone.'};
-    return { band: 'miss', label: 'MISS', points: CONFIG.scoring.miss, accuracy: 'Wrong stop. Game over for this run.' };
+    if (distance <= perfectRadius) return { band: 'perfect', label: 'PERFECT', points: CONFIG.scoring.perfect, accuracy: 'Bullseye!' };
+    if (distance <= perfectRadius * 1.6) return { band: 'great', label: 'GREAT', points: CONFIG.scoring.great, accuracy: 'Super close!' };
+    if (distance <= goodRadius) return { band: 'good', label: 'GOOD', points: CONFIG.scoring.good, accuracy: 'Safe stop.' };
+    return { band: 'miss', label: 'MISS', points: CONFIG.scoring.miss, accuracy: 'Wrong stop. Run lost.' };
   }
 
   function applyResult(result) {
@@ -201,27 +218,39 @@
     localStorage.setItem('sparkieBestScore', String(state.best));
 
     if (result.band === 'perfect') {
+      state.perfectCount += 1;
       el.gameScreen.classList.add('perfect-shake');
       setTimeout(() => el.gameScreen.classList.remove('perfect-shake'), 250);
     }
 
-    if (result.band === 'miss') {
-      state.gameOver = true;
-    }
-
+    if (result.band === 'miss') state.gameOver = true;
     showOverlay(result);
     updateHud();
   }
 
   function showOverlay(result) {
+    const finishedBaseRounds = state.round >= CONFIG.baseRounds;
+    const perfectBaseRun = state.perfectCount === CONFIG.baseRounds && !state.gameOver;
+
+    if (finishedBaseRounds && perfectBaseRun && !state.inImpossibleRound) {
+      state.unlockedImpossible = true;
+    }
+
+    const finalRoundComplete = state.round >= currentRoundLimit() && !state.gameOver;
+
     el.resultLabel.textContent = result.label;
     el.resultLabel.style.color = result.band === 'miss' ? '#a1a1a1' : result.band === 'perfect' ? '#ef5f17' : '#57beb1';
     el.resultPoints.textContent = result.band === 'miss' ? '0' : `+${result.points}`;
-    el.accuracyText.textContent = result.band === 'miss'
-      ? `${state.playerName}, you missed. Restart to try all 3 rounds.`
-      : state.round >= CONFIG.totalRounds
-      ? `Great run, ${state.playerName}!`
-      : `${result.accuracy} ${state.playerName}, get ready for round ${state.round + 1}.`;
+
+    if (state.gameOver) {
+      el.accuracyText.textContent = `${state.playerName}, wrong stop. You cannot proceed.`;
+    } else if (state.unlockedImpossible && state.round === CONFIG.baseRounds && !state.inImpossibleRound) {
+      el.accuracyText.textContent = `Perfect 3-round run! ${state.playerName}, Level 4 Impossible unlocked.`;
+    } else if (finalRoundComplete) {
+      el.accuracyText.textContent = `Awesome run, ${state.playerName}. Returning home is available.`;
+    } else {
+      el.accuracyText.textContent = `${result.accuracy} ${state.playerName}, prepare for round ${state.round + 1}.`;
+    }
 
     const asset = ASSET_BY_RESULT[result.band];
     if (asset) {
@@ -233,29 +262,53 @@
       el.rewardFallback.classList.remove('hidden');
     }
 
-    const canProceed = !state.gameOver && state.round < CONFIG.totalRounds;
-    el.nextRoundBtn.disabled = !canProceed;
-    el.nextRoundBtn.textContent = state.round >= CONFIG.totalRounds && !state.gameOver ? 'Completed!' : 'Next Round';
+    const canProceedToNext = !state.gameOver && !finalRoundComplete;
+    el.nextRoundBtn.disabled = !canProceedToNext;
+
+    if (state.unlockedImpossible && state.round === CONFIG.baseRounds && !state.inImpossibleRound && !state.gameOver) {
+      el.nextRoundBtn.disabled = false;
+      el.nextRoundBtn.textContent = 'Level 4: Impossible';
+    } else if (finalRoundComplete) {
+      el.nextRoundBtn.textContent = 'Completed';
+    } else {
+      el.nextRoundBtn.textContent = 'Next Round';
+    }
+
+    el.restartBtn.textContent = 'Go Home';
 
     el.overlay.classList.add('active');
     el.overlay.setAttribute('aria-hidden', 'false');
   }
 
   function nextRoundAction() {
-    if (state.gameOver || state.round >= CONFIG.totalRounds) return;
+    if (state.gameOver) return;
+
+    if (state.unlockedImpossible && state.round === CONFIG.baseRounds && !state.inImpossibleRound) {
+      state.round = CONFIG.baseRounds + 1;
+      state.inImpossibleRound = true;
+      closeOverlay();
+      updateHud();
+      startRound();
+      return;
+    }
+
+    if (state.round >= currentRoundLimit()) return;
+
     state.round += 1;
     closeOverlay();
     updateHud();
     startRound();
   }
 
-  function restartGame() {
+  function goHome() {
     closeOverlay();
-    state.score = 0;
-    state.round = 1;
-    state.gameOver = false;
-    updateHud();
-    startRound();
+    cancelAnimationFrame(state.rafId);
+    state.running = false;
+    state.stopped = true;
+    state.paused = false;
+
+    el.gameScreen.classList.remove('screen--active');
+    el.startScreen.classList.add('screen--active');
   }
 
   function closeOverlay() {
@@ -276,7 +329,7 @@
   function updateHud() {
     el.playerValue.textContent = state.playerName || '-';
     el.scoreValue.textContent = String(state.score);
-    el.roundValue.textContent = `${state.round}/${CONFIG.totalRounds}`;
+    el.roundValue.textContent = `${state.round}/${currentRoundLimit()}`;
     el.bestValue.textContent = String(state.best);
   }
 
