@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sparkie Jackpot</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="startScreen" class="screen screen--active" aria-label="Start screen">
+        <img class="valu-logo" src="../Value-Logo.png" alt="Valu logo" data-fallback="logo" />
+        <h1>Sparkie Jackpot</h1>
+        <p class="subtitle">Neon Slot Challenge</p>
+
+        <label for="playerName" class="input-label">Player Name</label>
+        <input id="playerName" class="name-input" maxlength="20" placeholder="Enter your name" />
+        <p id="nameError" class="error hidden">Please enter your name to start.</p>
+
+        <button id="startBtn" class="btn btn--primary">Start Game</button>
+      </section>
+
+      <section id="gameScreen" class="screen" aria-label="Sparkie Jackpot game screen">
+        <header class="topbar">
+          <img class="valu-logo valu-logo--small" src="../Value-Logo.png" alt="Valu logo" data-fallback="logo" />
+          <h2 class="game-title">Sparkie Jackpot</h2>
+        </header>
+
+        <section class="hud" aria-label="Player and score">
+          <div class="hud-card"><span>Player</span><strong id="playerDisplay">-</strong></div>
+          <div class="hud-card"><span>Score</span><strong id="scoreDisplay">0</strong></div>
+          <div class="hud-card"><span>Best</span><strong id="bestDisplay">0</strong></div>
+          <div class="hud-card"><span>Spins</span><strong id="spinsDisplay">0</strong></div>
+        </section>
+
+        <section id="machine" class="machine" aria-label="Slot machine">
+          <div class="cabinet-lights" aria-hidden="true"></div>
+          <div class="reel-window-wrap">
+            <div id="reel0" class="reel-frame"><div class="reel-strip"></div></div>
+            <div id="reel1" class="reel-frame"><div class="reel-strip"></div></div>
+            <div id="reel2" class="reel-frame"><div class="reel-strip"></div></div>
+          </div>
+
+          <aside class="sparkie-wrap" aria-hidden="true">
+            <img id="sparkieDecor" src="../sparkie_player.png" alt="Sparkie" data-fallback="sparkie" />
+          </aside>
+
+          <div class="controls">
+            <button id="spinBtn" class="btn btn--spin">SPIN</button>
+            <button id="muteBtn" class="btn btn--ghost" aria-pressed="false">Mute: Off</button>
+          </div>
+
+          <p id="resultMessage" class="result-msg">Press SPIN to play.</p>
+          <div id="pointsBurst" class="points-burst" aria-hidden="true">+0</div>
+          <canvas id="fxCanvas" class="fx-canvas" aria-hidden="true"></canvas>
+        </section>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
